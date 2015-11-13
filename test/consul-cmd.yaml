@@ -1,0 +1,16 @@
+apiVersion: v0.1
+kind: test
+spec:
+- name: consul-check
+  protocol: consul
+  recv:
+    ack:
+      recv: '{ "name": "value", "type": "value" }'
+    nak: {}
+  send:
+    spec:
+      arg:
+      - '{ "name": "value", "type": "value" }'
+      env:
+        name: value
+      uri: consul://localhost:8500

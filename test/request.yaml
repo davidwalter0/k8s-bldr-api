@@ -1,0 +1,13 @@
+apiVersion: v0.1
+kind: test
+spec:
+- name: test-cmd
+  recv:
+    ack: []
+    base64: true
+    nak: []
+  send:
+    spec:
+      arg: []
+      env: {}
+      url: uri

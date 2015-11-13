@@ -1,0 +1,74 @@
+{
+  "apiVersion": "v0.1",
+  "kind": "test",
+  "spec": [
+    {
+      "name": "k8s-healthz-ack",
+      "protocol": "http",
+      "send": {
+        "spec": {
+          "arg": [],
+          "env": {},
+          "uri": "http://localhost:8888/healthz"
+        }
+      },
+      "recv": {
+        "ack": {
+          "recv": "ok"
+        },
+        "nak": null
+      }
+    },
+    {
+      "name": "k8s-healthz-nak",
+      "protocol": "http",
+      "send": {
+        "spec": {
+          "arg": [],
+          "env": {},
+          "uri": "http://localhost:8888/healthz"
+        }
+      },
+      "recv": {
+        "ack": {
+          "recv": "nak"
+        },
+        "nak": null
+      }
+    },
+    {
+      "name": "k8s-healthz-api-ack",
+      "protocol": "http",
+      "send": {
+        "spec": {
+          "arg": [],
+          "env": {},
+          "uri": "http://localhost:8888/api"
+        }
+      },
+      "recv": {
+        "ack": {
+          "recv": "{\n  \"versions\": [\n    \"v1\"\n  ]\n}"
+        },
+        "nak": null
+      }
+    },
+    {
+      "name": "k8s-healthz-api-nak",
+      "protocol": "http",
+      "send": {
+        "spec": {
+          "arg": [],
+          "env": {},
+          "uri": "http://localhost:8888/api"
+        }
+      },
+      "recv": {
+        "ack": {
+          "recv": "{ \"versions\": [ \"v1\" ] }"
+        },
+        "nak": null
+      }
+    }
+  ]
+}

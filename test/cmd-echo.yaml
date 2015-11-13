@@ -1,0 +1,16 @@
+apiVersion: v0.1
+kind: test
+spec:
+- name: cmd-echo-json
+  protocol: cmd
+  recv:
+    ack:
+      stdout: Hello World!
+    nak: {}
+  send:
+    spec:
+      arg:
+      - Hello World!
+      env:
+        name: value
+      uri: file:///bin/echo

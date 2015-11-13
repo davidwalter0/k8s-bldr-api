@@ -1,0 +1,31 @@
+{
+  "apiVersion": "v0.1",
+  "kind": "test",
+  "spec": [
+    {
+      "name": "cmd-docker-json",
+      "protocol": "cmd",
+      "recv": {
+        "ack": {
+          "stdout": "{ \"reply\": \"ok\" }\n"
+        },
+        "nak": {}
+      },
+      "send": {
+        "spec": {
+          "arg": [
+            "run",
+            "--rm",
+            "busybox",
+            "/bin/echo",
+            "{ \"reply\": \"ok\" }"
+          ],
+          "env": {
+            "name": "value"
+          },
+          "uri": "file:///usr/bin/docker"
+        }
+      }
+    }
+  ]
+}

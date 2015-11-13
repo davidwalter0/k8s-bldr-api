@@ -1,0 +1,17 @@
+apiVersion: v0.1
+kind: test
+spec:
+ - name: tcp-test-string
+- name: tcp-test-string
+  send:
+    spec:
+      uri: tcp://localhost:7
+      arg:
+        - test string
+      env: {}
+  recv:
+    base64: false
+    ack:
+      recv: test string
+
+    nak: 

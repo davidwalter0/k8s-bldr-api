@@ -1,0 +1,21 @@
+{
+  "apiVersion": "v0.1",
+  "kind": "test",
+  "spec": [
+    {
+      "name": "test-cmd",
+      "send": {
+        "spec": {
+          "arg": [],
+          "env": {},
+          "url": "uri"
+        }
+      },
+      "recv": {
+        "ack": [],
+        "nak": [],
+        "base64": true
+      }
+    }
+  ]
+}

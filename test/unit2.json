@@ -1,0 +1,23 @@
+{
+   "apiVersion": "v0.1",
+   "kind": "test",
+   "spec": [
+     {
+       "name": "valid-k8s-api",
+       "protocol": "http",
+       "send": {
+         "spec": {
+           "arg": [],
+           "env": {},
+           "uri": "http://localhost:8888/api"
+         }
+       },
+       "recv": {
+         "ack": {
+           "recv": "{\n  \"versions\": [\n    \"v1\"\n  ]\n}"
+         },
+         "nak": null
+       }
+     }
+   ]
+}

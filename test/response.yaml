@@ -1,0 +1,7 @@
+apiVersion: v0.1
+kind: result
+spec:
+- status:
+    error: extended text
+    exit: 0
+    name: k8s-healthz-api-reply

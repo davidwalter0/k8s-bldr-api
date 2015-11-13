@@ -1,0 +1,19 @@
+apiVersion: v0.1
+kind: test
+spec:
+- name: valid-k8s-api
+  protocol: http
+  recv:
+    ack:
+      recv: |-
+        {
+          "versions": [
+            "v1"
+          ]
+        }
+    nak: null
+  send:
+    spec:
+      arg: []
+      env: {}
+      uri: http://localhost:8888/api

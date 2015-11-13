@@ -1,0 +1,52 @@
+apiVersion: v0.1
+kind: test
+spec:
+- name: k8s-healthz-ack
+  protocol: http
+  recv:
+    ack:
+      recv: ok
+    nak: null
+  send:
+    spec:
+      arg: []
+      env: {}
+      uri: http://localhost:8888/healthz
+- name: k8s-healthz-nak
+  protocol: http
+  recv:
+    ack:
+      recv: nak
+    nak: null
+  send:
+    spec:
+      arg: []
+      env: {}
+      uri: http://localhost:8888/healthz
+- name: k8s-healthz-api-ack
+  protocol: http
+  recv:
+    ack:
+      recv: |-
+        {
+          "versions": [
+            "v1"
+          ]
+        }
+    nak: null
+  send:
+    spec:
+      arg: []
+      env: {}
+      uri: http://localhost:8888/api
+- name: k8s-healthz-api-nak
+  protocol: http
+  recv:
+    ack:
+      recv: '{ "versions": [ "v1" ] }'
+    nak: null
+  send:
+    spec:
+      arg: []
+      env: {}
+      uri: http://localhost:8888/api
