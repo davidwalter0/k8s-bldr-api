@@ -1,0 +1,52 @@
+{
+	"ImportPath": "github.com/davidwalter0/k8s-bldr-api",
+	"GoVersion": "go1.5.1",
+	"Deps": [
+		{
+			"ImportPath": "github.com/davidwalter0/logger",
+			"Rev": "0ba5a988075eb5e2ea061fa35ef1abd8e51a1db1"
+		},
+		{
+			"ImportPath": "github.com/davidwalter0/transform",
+			"Rev": "8be2ed78ff1fa197aaf0d3ce9b1a0a0788f59725"
+		},
+		{
+			"ImportPath": "github.com/go-kit/kit/endpoint",
+			"Rev": "b50c5697c253c3ea01687acbef12ac1b2d75a3af"
+		},
+		{
+			"ImportPath": "github.com/go-kit/kit/log",
+			"Rev": "b50c5697c253c3ea01687acbef12ac1b2d75a3af"
+		},
+		{
+			"ImportPath": "github.com/go-kit/kit/transport/http",
+			"Rev": "b50c5697c253c3ea01687acbef12ac1b2d75a3af"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/consul/api",
+			"Comment": "v0.5.2-311-g0b05dbe",
+			"Rev": "0b05dbeb216f878ab08aa6267c1a23eeaab240ce"
+		},
+		{
+			"ImportPath": "github.com/jehiah/go-strftime",
+			"Rev": "834e15c05a45371503440cc195bbd05c9a0968d9"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "b846920a172af75fe52c1400ae6094307be83b8a"
+		},
+		{
+			"ImportPath": "gopkg.in/logfmt.v0",
+			"Rev": "c50dc9aa845e681529d8e49d3dc11ec0195aacac"
+		},
+		{
+			"ImportPath": "gopkg.in/stack.v1",
+			"Comment": "v1.4.0",
+			"Rev": "0585967eab0016c8e4e2d55ac20585b469574cec"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "53feefa2559fb8dfa8d81baad31be332c97d6c77"
+		}
+	]
+}
