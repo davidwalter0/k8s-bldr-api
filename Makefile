@@ -84,7 +84,7 @@ test-files=$(patsubst %,test/%,$(test-file-list))
 apiVersion=v1
 
 test-echo: .dep
-	port=1234; $(DIR)/bin/api-service --port=$${port} --debug --verbose > $(DIR)/log.tmp 2>&1 & pid=$$?; \
+	port=1234; $(DIR)/bin/api-service --port=$${port} --debug --verbose > $(DIR)/log.tmp 2>&1 & pid=$$!; \
 	until curl localhost:$${port} > /dev/null 2>&1 ; do sleep 1; done;\
 	for file in test/cmd-echo.yaml; do\
 	  if [[ $${file##*.} == "yaml" ]]; then	\
@@ -94,7 +94,7 @@ test-echo: .dep
 #; kill $${pid}
 
 test-echo-jq: .dep
-	port=1234; $(DIR)/bin/api-service --port=$${port} --debug --verbose > $(DIR)/log.tmp 2>&1 & pid=$$?; \
+	port=1234; $(DIR)/bin/api-service --port=$${port} --debug --verbose > $(DIR)/log.tmp 2>&1 & pid=$$!; \
 	until curl localhost:$${port} > /dev/null 2>&1 ; do sleep 1; done;\
 	for file in test/cmd-echo.yaml; do\
 	  if [[ $${file##*.} == "yaml" ]]; then	\
