@@ -45,11 +45,19 @@ $(package_dir)/.dep: $(local_depends)
 
 %: bin/% $(libargs)
 
+BUILDARGS:=$(shell rm bin/api-service; echo \-X main.Build="$$(date -u +%Y.%m.%d.%H.%M.%S)" \-X main.Commit="\$$(git log --format=%hash-%aI -n1)")
+
+ARGS:=-tags netgo -ldflags "-s -w $(BUILDARGS)"
 bin/%: %.go $(libargs) $(package_dir)/.dep $(local_depends)
 	@echo "Building via % rule for $@ from $<"
-	@mkdir -p bin
+	@mkdir -p bin;
+	echo build=BUILDARGS  build=$(BUILDARGS) args=$(ARGS)
 	GO15VENDOREXPERIMENT=1 CGO_ENABLED=0 GOPATH=${GOPATH} \
-		$(GOPATH)/bin/godep go build -a -ldflags '-s' -o $@ $< $(libargs)
+		$(GOPATH)/bin/godep go build $(ARGS) -o $@ $< $(libargs)
+#		$(GOPATH)/bin/godep go build -a -ldflags '-s' -o $@ $< $(libargs)
+version: bin/api-service
+	bin/api-service --version
+#	bin/api-service --verbose --debug
 
 init: get save
 
