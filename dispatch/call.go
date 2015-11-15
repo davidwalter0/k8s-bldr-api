@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/davidwalter0/logger"
 	"github.com/davidwalter0/transform"
-	consulapi "github.com/hashicorp/consul/api"
 	"io/ioutil"
 	"log"
 	"net"
@@ -30,6 +29,7 @@ type ApiFlags struct {
 	Filename        *string
 	Verbose         *bool
 	ApiVersion      *string
+	Port            *uint
 }
 
 var version string
@@ -70,7 +70,7 @@ func validate(expect, got string, err error) (rc int, message string) {
 	return rc, message
 }
 
-func ExecuteOSCmd(name, arg0 string, args []string, expect, version string, b64 bool, verbose bool) (rc int, message string) {
+func ExecuteOSCmd(name, arg0 string, args []string, expect, version string, b64 bool, verbose bool) (rc int, message, text string) {
 	defer RecoverWithMessage("ExecuteOSCmd", *ExitOnException, *FailureExitCode)
 	rc, message = 1, "fail"
 	cmd := exec.Command(arg0, args...)
@@ -78,8 +78,10 @@ func ExecuteOSCmd(name, arg0 string, args []string, expect, version string, b64 
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
+	Info.Printf("ApiVersion [%8s] test [%-32s] expect [%s] output [%s]\n", version, name, expect, out.String())
+
 	result := out.String()
-	if *Verbose {
+	if true {
 		Info.Printf("ApiVersion [%8s] test [%-32s] cmd := exec.Command( %s %q", version, name, arg0, args)
 		Info.Printf("ApiVersion [%8s] test [%-32s] expected [%s]\n", version, name, expect)
 		if expect == result {
@@ -92,9 +94,10 @@ func ExecuteOSCmd(name, arg0 string, args []string, expect, version string, b64 
 
 	if err != nil {
 		rc, message = 1, fmt.Sprintf("%s", err)
-		return rc, message
+		return rc, message, out.String()
 	}
-	return validate(expect, result, err)
+	i, m := validate(expect, result, err)
+	return i, m, result
 }
 
 func HttpQuery(name, send, version string, verbose bool) (result string, err error) {
@@ -124,63 +127,6 @@ func ExecuteHttpCheck(name, uri string, args []string, expect, version string, b
 	got, err := HttpQuery(name, uri, version, verbose)
 	if base64Encoded {
 		got = base64.StdEncoding.EncodeToString([]byte(got))
-	}
-	return validate(expect, got, err)
-}
-
-func ConsulQuery(name, uri, arg0 string, args []string, expect, version string, verbose bool) (result string, err error) {
-	defer RecoverWithMessage("ConsulQuery", *ExitOnException, *FailureExitCode)
-	config := consulapi.DefaultConfig()
-	config.Address = arg0
-	consul, err := consulapi.NewClient(config)
-
-	var api_path string = "api/v1/customer/domain"
-	var root string = "api/v1"
-	kv := consul.KV()
-	d := &consulapi.KVPair{Key: api_path, Value: []byte(args[0])}
-
-	kv.Put(d, nil)
-
-	if *Debug {
-		logger.Info.Println(consul, err)
-	}
-	kvp, qm, error := kv.Get(api_path, nil)
-	if *Debug {
-		logger.Info.Println(kvp, qm, error)
-	}
-	if err != nil {
-		logger.Info.Println(err)
-		return "*error*", err
-	} else {
-		if *Debug {
-			logger.Info.Println(string(kvp.Value))
-		}
-	}
-
-	keys, qm, err := kv.Keys(root, "/", nil)
-	if err == nil {
-		if *Debug {
-
-			for key := range keys {
-				logger.Info.Println(qm, key)
-			}
-		}
-	}
-	return string(kvp.Value), err
-}
-
-func ExecuteConsulCheck(name, uri, arg0 string, args []string, expect, version string, base64Encoded bool, verbose bool) (rc int, message string) {
-	defer RecoverWithMessage("ExecuteConsulCheck", *ExitOnException, *FailureExitCode)
-	rc, message = 1, "fail"
-	if *Debug {
-		Info.Println(name, uri, arg0, args)
-	}
-	got, err := ConsulQuery(name, uri, arg0, args, expect, version, verbose)
-	if base64Encoded {
-		got = base64.StdEncoding.EncodeToString([]byte(got))
-	}
-	if *Debug {
-		Info.Println(name, uri, arg0, args, expect, version, verbose)
 	}
 	return validate(expect, got, err)
 }

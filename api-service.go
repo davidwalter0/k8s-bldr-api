@@ -10,16 +10,16 @@ import (
 	"golang.org/x/net/context"
 	"log"
 	"net/http"
+	"strconv"
 )
 
-type ValidateService interface {
-	ValidateRequest(string) (string, error)
-	DeployRequest(string) (string, error)
+type Service interface {
+	Request(string) (string, error)
 }
 
-type validateService struct{}
+type service struct{}
 
-func (validateService) ValidateRequest(request *dispatch.Request) (response string, err error) {
+func (service) Request(request *dispatch.Request) (response string, err error) {
 	if request == nil {
 		return "", ErrorEmpty
 	}
@@ -30,60 +30,25 @@ func (validateService) ValidateRequest(request *dispatch.Request) (response stri
 
 func main() {
 	ctx := context.Background()
-	svc := validateService{}
+	svc := service{}
 
-	requestHandler := httptransport.NewServer(
+	handler := httptransport.NewServer(
 		ctx,
-		makeValidateRequestEndpoint(svc),
-		decodeValidateRequest,
+		makeEndpoint(svc),
+		decodeRequest,
 		encodeResponse,
 	)
-
-	deployHandler := httptransport.NewServer(
-		ctx,
-		makeDeployRequestEndpoint(svc),
-		decodeValidateRequest,
-		encodeResponse,
-	)
-
-	http.Handle("/api/v1/validate", requestHandler)
-	// http.Handle("/api/v1/validate/", requestHandler)
-	//	http.Handle("/", requestHandler)
-	http.Handle("/api/v1/deploy", deployHandler)
-	http.Handle("/api/", deployHandler)
-	log.Fatal(http.ListenAndServe(":9999", nil))
+	http.Handle("/api/v1/exec", handler)
+	http.Handle("/api/v0.1/exec", handler)
+	http.Handle("/", handler)
+	port := strconv.Itoa(int(*flags.Port))
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
 var exitExecError int = 3
 var exitNormal int = 0
 
-/*
-ways to initialize?
-	response := dispatch.Response{
-		ApiVersion: apiVersion,
-		Kind:       "response",
-		// Spec:       dispatch.Spec{},
-		Spec: dispatch.Spec{
-			States: []dispatch.Status{status},
-		},
-		// Status:     {},
-		// Spec:       {},
-	}
-	states := []dispatch.Status{status}
-	response.Spec.States = states
-*/
-
-// func NewResponse(name string, err error, exit int) *dispatch.Response {
-// 	status := dispatch.Status{Error: fmt.Sprintf("%v", err), Exit: exit, Name: name}
-// 	response := dispatch.Response{
-// 		ApiVersion: apiVersion,
-// 		Kind:       "response",
-// 		Spec:       dispatch.Spec{},
-// 	}
-// 	return &response
-// }
-
-func makeValidateRequestEndpoint(svc validateService) endpoint.Endpoint {
+func makeEndpoint(svc service) endpoint.Endpoint {
 	var exit int
 	return func(ctx context.Context, requestInterface interface{}) (interface{}, error) {
 		request := requestInterface.(dispatch.Request)
@@ -99,139 +64,43 @@ func makeValidateRequestEndpoint(svc validateService) endpoint.Endpoint {
 			dispatch.MapRecursePrint(request)
 			dispatch.Plain.Printf("------------------------------------------------------------------------\n")
 		}
-		v, err := svc.ValidateRequest(&request)
+		v, err := svc.Request(&request)
 		if err != nil {
 			if *debug {
 				dispatch.Info.Println(v)
 				dispatch.Info.Printf("ctx %v\n", ctx)
 			}
-			response := dispatch.NewResponse("API Call from /api/v1/validate")
-			response.Append(request.Spec[0].Name, err, exitExecError, "")
+			response := dispatch.NewResponse("API Call from /api/v1/exec")
+			response.Append(request.Spec[0].Name, err, exitExecError, "", "")
 			return response, nil
 		}
 		if *debug {
 			dispatch.Info.Println(v)
 		}
 		requestResponse := dispatch.Request(request)
-		response := dispatch.NewResponse("API Call from /api/v1/validate")
+		response := dispatch.NewResponse("API Call from /api/v1/exec")
 		exit, err, response = dispatch.ApiDispatch(&requestResponse, response.Filename, *debug, *verbose)
 		return response, err
 	}
 }
 
-func makeDeployRequestEndpoint(svc validateService) endpoint.Endpoint {
-	var exit int
-	return func(ctx context.Context, requestInterface interface{}) (interface{}, error) {
-		request := requestInterface.(dispatch.Request)
-		v, err := svc.ValidateRequest(&request)
-		if err != nil {
-			if *debug {
-				dispatch.Info.Println(v)
-				dispatch.Info.Printf("ctx %v\n", ctx)
-			}
-			response := dispatch.NewResponse("API Call from /api/v1/deploy")
-			response.Append(request.Spec[0].Name, err, exitExecError, "error")
-			return response, nil
-		}
-		if *debug {
-			dispatch.Info.Println(v)
-		}
-		response := dispatch.NewResponse("API Call from /api/v1/deploy")
-		var reader dispatch.ReadWriteStringBuffer
-		err = json.NewEncoder(reader).Encode(request)
-		if false {
-			dispatch.Info.Println(exit)
-		}
-		response.Append(request.Spec[0].Name, err, exitExecError, string(reader))
-		return response, nil
-	}
-}
-
-func decodeValidateRequest(r *http.Request) (interface{}, error) {
+func decodeRequest(r *http.Request) (interface{}, error) {
 	var request dispatch.Request
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		dispatch.Info.Printf("encodeResponse %v\n%v\n", r, request)
 		return nil, err
 	}
 
 	if *debug {
 		dispatch.Info.Printf("%v\n", request)
 	}
-	/*
-		if *debug {
-			dispatch.Plain.Printf("\nRequest\n------------------------------------------------------------------------\n")
-			dispatch.Plain.Printf("\n------------------------------------------------------------------------\n")
-			dispatch.Plain.Println(request)
-			dispatch.Plain.Printf("\n------------------------------------------------------------------------\n")
-			dispatch.Plain.Println(r)
-
-			dispatch.Info.Println(r.Body)
-		}
-		dispatch.Info.Println(r.URL)
-
-		var m map[string]interface{}
-		Info.Printf("%v\n", *r)
-		var buffer []byte
-		// json.Unmarshal([]byte(*r), &buffer)
-		text := dispatch.ReadWriteStringBuffer(buffer)
-		Info.Println(text)
-		Info.Println(dispatch.Jsonify(*r))
-		Info.Println(dispatch.Jsonify(r.Header))
-		Info.Println(dispatch.Jsonify(r.Body))
-		Info.Println(dispatch.Jsonify(text))
-		js := json.NewDecoder(text)
-		Info.Println(dispatch.Jsonify(js))
-		text = dispatch.ReadWriteStringBuffer(dispatch.Jsonify(*r))
-		var x interface{}
-		x, _ = dispatch.Mapify(text)
-		m = x.(map[string]interface{})
-		dispatch.MapRecursePrint(m)
-
-		x, _ = dispatch.Mapify(*r)
-		m = x.(map[string]interface{})
-		dispatch.MapRecursePrint(m)
-		dispatch.MapRecursePrint(r.TransferEncoding)
-		dispatch.MapRecursePrint(r.Method)
-
-		dispatch.MapRecursePrint(r.Header)
-		x, _ = dispatch.Mapify(r.Header)
-		m = x.(map[string]interface{})
-		dispatch.MapRecursePrint(m)
-
-		dispatch.MapRecursePrint(r.Body)
-		dispatch.MapRecursePrint(r.URL)
-		dispatch.Info.Println(r.URL)
-		dispatch.Info.Println(r.TransferEncoding[:])
-		dispatch.Info.Println(r.Method)
-		dispatch.Info.Println(r.Header)
-		dispatch.Info.Println(r.Trailer)
-		dispatch.Info.Println(r.MultipartForm)
-		dispatch.Info.Println(r.Body)
-		dispatch.Info.Println(r.URL)
-
-		switch r.Method {
-		case "GET":
-			Info.Println("Get method will execute now")
-		case "PUT":
-			Info.Println("Put method will execute now")
-		case "DELETE":
-			Info.Println("Delete method will execute now")
-		case "POST":
-			Info.Println("POST method will execute now")
-		}
-
-		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-			return nil, err
-		}
-
-		if *debug {
-			dispatch.Info.Printf("%v\n", request)
-		}
-	*/
+	dispatch.Info.Printf("encodeResponse %v\n%v\n", r, request)
 	return request, nil
 }
 
 func encodeResponse(w http.ResponseWriter, response interface{}) error {
+	dispatch.Info.Printf("encodeResponse %v\n%v\n", w, response)
 	if *debug {
 		dispatch.Info.Printf("encodeResponse %v\n%v\n", w, response)
 	}

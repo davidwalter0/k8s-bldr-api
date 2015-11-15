@@ -16,6 +16,7 @@ var debug *bool = flag.Bool("debug", false, "enable debug logging and other tool
 var filename *string = flag.String("file", "unit.json", "--file json / yaml to execute tests from unit.{yaml,json}")
 var verbose *bool = flag.Bool("verbose", false, "--verbose output of test progress status.")
 var apiVersion *string = flag.String("apiversion", "v0.1", "configure the api version to use. only v0.1 is supported")
+var port *uint = flag.Uint("port", 9999, "configure the port on which to listen")
 
 var flags *dispatch.ApiFlags = &dispatch.ApiFlags{}
 
@@ -26,4 +27,5 @@ var ExportHelper = (func() {
 	flags.Filename = filename
 	flags.Verbose = verbose
 	flags.ApiVersion = apiVersion
+	flags.Port = port
 })

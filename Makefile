@@ -82,13 +82,36 @@ test-file-list=$(shell echo check-echo.yaml check-tcp.yaml k8s-health.yaml	\
 test-files=$(patsubst %,test/%,$(test-file-list))
 
 apiVersion=v1
+
+test-echo: .dep
+	port=1234; $(DIR)/bin/api-service --port=$${port} --debug --verbose > $(DIR)/log.tmp 2>&1 & pid=$$?; \
+	until curl localhost:$${port} > /dev/null 2>&1 ; do sleep 1; done;\
+	for file in test/cmd-echo.yaml; do\
+	  if [[ $${file##*.} == "yaml" ]]; then	\
+	      curl --silent -XPOST -d"$$($(DIR)/bin/yaml2json --compress < $${file})" localhost:$${port}/api/$(apiVersion)/exec;	\
+	  fi;	\
+	done
+#; kill $${pid}
+
+test-echo-jq: .dep
+	port=1234; $(DIR)/bin/api-service --port=$${port} --debug --verbose > $(DIR)/log.tmp 2>&1 & pid=$$?; \
+	until curl localhost:$${port} > /dev/null 2>&1 ; do sleep 1; done;\
+	for file in test/cmd-echo.yaml; do\
+	  if [[ $${file##*.} == "yaml" ]]; then	\
+	      curl --silent -XPOST -d"$$($(DIR)/bin/yaml2json --compress < $${file})" localhost:$${port}/api/$(apiVersion)/exec |\
+		 $(DIR)/bin/jq '.spec.status[]|{exit:.exit, when: .timestamp, name:.name}'|cat;  \
+	  fi;	\
+	done
+# ; kill $${pid} make wil kill the children processes. . . ?
+#	done| ${DIR}/bin/jq --raw-output --compact-output '.spec.status[]|{exit:.exit, when: .timestamp, name:.name}'|cat
+
 test-api-service: .dep test-api-service-minimal
 	@echo; if((0)); then														\
 	for file in $(test-files) ; do													\
 	  if [[ $${file##*.} == "yaml" ]]; then												\
-	      echo "curl --silent -XPOST -d'$$($(DIR)/bin/yaml2json --compress < $${file})' localhost:9999/api/${apiVersion}/validate";	\
+	      echo "curl --silent -XPOST -d'$$($(DIR)/bin/yaml2json --compress < $${file})' localhost:9990/api/${apiVersion}/exec";	\
 	    else															\
-	      echo "curl --silent -XPOST -d@$${file} localhost:9999/api/${apiVersion}/validate";					\
+	      echo "curl --silent -XPOST -d@$${file} localhost:9990/api/${apiVersion}/exec";					\
 	  fi;																\
 	done; 		fi;
 
@@ -97,27 +120,18 @@ test-api-service-jq:
 	echo $(test-files);											\
 	for file in $(test-files) ; do											\
 	  if [[ $${file##*.} == "yaml" ]]; then										\
-	      curl --silent -XPOST -d"$$($(DIR)/bin/yaml2json < $${file})" localhost:9999/api/${apiVersion}/validate;	\
+	      curl --silent -XPOST -d"$$($(DIR)/bin/yaml2json < $${file})" localhost:9990/api/${apiVersion}/exec;	\
 	    else													\
-	      curl --silent -XPOST -d@$${file} localhost:9999/api/$${apiVersion}/validate;				\
+	      curl --silent -XPOST -d@$${file} localhost:9990/api/$${apiVersion}/exec;				\
 	  fi;														\
 	done| ${DIR}/bin/jq --raw-output --compact-output '.spec.status[]|{exit:.exit, when: .timestamp, name:.name}'|cat
 
 test-api-service-minimal:
 	for file in $(test-files) ; do											\
 	  if [[ $${file##*.} == "yaml" ]]; then										\
-	      curl --silent -XPOST -d"$$($(DIR)/bin/yaml2json < $${file})" localhost:9999/api/${apiVersion}/validate;	\
+	      curl --silent -XPOST -d"$$($(DIR)/bin/yaml2json < $${file})" localhost:9990/api/${apiVersion}/exec;	\
 	    else													\
-	      curl --silent -XPOST -d@$${file} localhost:9999/api/${apiVersion}/validate;				\
-	  fi;														\
-	done
-
-test-api-service-deploy:
-	for file in $(test-files) ; do											\
-	  if [[ $${file##*.} == "yaml" ]]; then										\
-	      curl --silent -XPOST -d"$$($(DIR)/bin/yaml2json < $${file})" localhost:9999/api/${apiVersion}/deploy;	\
-	    else													\
-	      curl --silent -XPOST -d@$${file} localhost:9999/api/${apiVersion}/deploy;					\
+	      curl --silent -XPOST -d@$${file} localhost:9990/api/${apiVersion}/exec;				\
 	  fi;														\
 	done
 

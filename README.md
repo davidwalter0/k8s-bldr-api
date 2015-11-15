@@ -4,6 +4,16 @@ Testing with 2 terminal sessions. You may want to proxy a k8s cluster
 for the k8s test to use localhost:8888, or modify the yaml/json in
 tests configuration.
 
+
+If using the support scripts for kubernetes private test cluster you
+may want to enable that scripting with the following options.
+
+```
+cp /path/to/k8s-cfg/k8s-cfg  .
+ln -s /path/to/k8s-cfg/.k8s-cfg .
+```
+
+
 ```
 kubectl proxy --port=8888 --api-prefix=/
 ```

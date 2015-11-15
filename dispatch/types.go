@@ -53,10 +53,11 @@ type Request struct {
 
 type Status struct {
 	TimeStamp string `json:"timestamp"`
-	Error     string `json:"error"` // extended text
-	Exit      int    `json:"exit"`  // 0
-	Name      string `json:"name"`  // k8s-healthz-api-reply
-	Text      string `json:"text"`  // k8s-healthz-api-reply
+	Error     string `json:"error"`  // extended text
+	Exit      int    `json:"exit"`   // 0
+	Name      string `json:"name"`   // k8s-healthz-api-reply
+	Text      string `json:"text"`   // k8s-healthz-api-reply
+	Output    string `json:"output"` // k8s-healthz-api-reply
 }
 
 type Spec struct {
@@ -81,7 +82,8 @@ func NewResponse(filename string) *Response {
 	return &response
 }
 
-func (response *Response) Append(name string, err error, exit int, text string) {
-	status := Status{Error: fmt.Sprintf("%v", err), Exit: exit, Name: name, TimeStamp: TimeStamp(), Text: text}
+func (response *Response) Append(name string, err error, exit int, text, output string) {
+	Info.Println(name, err, exit, text, output)
+	status := Status{Error: fmt.Sprintf("%v", err), Exit: exit, Name: name, TimeStamp: TimeStamp(), Text: text, Output: output}
 	response.Spec.States = append(response.Spec.States, status)
 }
