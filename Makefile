@@ -45,7 +45,7 @@ $(package_dir)/.dep: $(local_depends)
 
 %: bin/% $(libargs)
 
-BUILDARGS:=$(shell rm bin/api-service; echo \-X main.Build="$$(date -u +%Y.%m.%d.%H.%M.%S)" \-X main.Commit="\$$(git log --format=%hash-%aI -n1)")
+BUILDARGS:=$(shell rm bin/api-service; echo \-X main.Build="$$(date -u +%Y.%m.%d.%H.%M.%S.%:::z)" \-X main.Commit="\$$(git log --format=%hash-%aI -n1)")
 
 ARGS:=-tags netgo -ldflags "-s -w $(BUILDARGS)"
 bin/%: %.go $(libargs) $(package_dir)/.dep $(local_depends)

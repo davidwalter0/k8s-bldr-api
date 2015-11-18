@@ -1,0 +1,13 @@
+id=
+ssh_key_name=id_rsa
+master=k8s-${id}master-01
+os_user=centos
+name=${dir##*/}
+yaml=${dir}/${name}.yaml
+template=${dir}/${name}-template.yaml
+hubuid=davidwalter0
+k8srepo="git@k8s-git-repo:${name}.git"
+hubrepo="git@github.com:${hubuid}/${name}.git"
+
+domain=cluster.local
+port=9999

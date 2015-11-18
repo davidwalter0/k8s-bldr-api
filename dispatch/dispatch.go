@@ -71,7 +71,6 @@ func ApiDispatch(unit *Request, filename string, debug bool, verbose bool) (exit
 						implemented = true
 						expect = unit.Spec[i].Recv.Ack["stdout"]
 						rc, message, text = ExecuteOSCmd(name, arg0, args, expect, version, base64Encoded, verbose)
-						response.Append(name, err, rc, expect, text)
 						if verbose {
 							Info.Printf("ApiVersion [%8s] test [%-32s] arg0  : [%q]\n", version, name, arg0)
 							Info.Printf("ApiVersion [%8s] test [%-32s] execute type [%s] cmd [%s] with args [%q]\n", version, name, typ, arg0, args)
